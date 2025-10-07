@@ -3,6 +3,41 @@
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fgonzalezreal%2Fswift-markdown-ui%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/gonzalezreal/swift-markdown-ui)
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2Fgonzalezreal%2Fswift-markdown-ui%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/gonzalezreal/swift-markdown-ui)
 
+### Note
+
+This fork adds full-text selection to Markdown rendering on iOS 16+ by combining native SwiftUI blocks with a custom `UITextView` that renders as much content as possible as a single `NSAttributedString`. This enables seamless selection across paragraphs while preserving rich styling and theming.
+
+To keep the original library intact, the project exposes two top-level views: `Markdown` (original behavior) and `HybridMarkdown` (selectable text + SwiftUI blocks).
+
+- Supported in the text run (selectable via `UITextView`):
+  - Headings
+  - Paragraphs (except when containing inline images)
+  - Blockquote
+  - BulletedList
+  - NumberedList
+  - TaskList
+  - ThematicBreak
+
+- Rendered as pure SwiftUI blocks:
+  - Table
+  - HtmlBlock
+
+- Hybrid block (SwiftUI container with a selectable `UITextView` inside):
+  - Code
+
+How it works:
+- The document is segmented into “text runs” and “SwiftUI blocks”.
+- As long as the content is composed of text-run blocks, it is rendered in a single `UITextView`, allowing selection across paragraphs.
+- When the segmentation hits a SwiftUI or hybrid block (e.g., table or code), rendering switches to that block. Selection does not span across that boundary; it resumes in the next text run.
+
+Theme caveat
+HybridMarkdown maps theme values to NSAttributedString/TextKit for text runs and uses overlays for some decorations (quote bars, heading dividers, thematic breaks). While it aims to mirror Theme closely, it is not identical to the pure SwiftUI theming:
+Inline and paragraph styles are approximated via UIKit attributes.
+Some block-level effects are drawn as layers, not SwiftUI views.
+Code blocks support a hybrid theming path (SwiftUI container + UITextView content).
+
+---
+
 Display and customize Markdown text in SwiftUI.
 
 * [Overview](#overview)
