@@ -8,6 +8,8 @@ struct DingusView: View {
     You can try **GitHub Flavored Markdown** here.  This dingus is powered
     by [MarkdownUI](https://github.com/gonzalezreal/MarkdownUI), a native
     Markdown renderer for SwiftUI.
+    
+    ---
 
     1. item one
     1. item two
@@ -23,7 +25,7 @@ struct DingusView: View {
       }
 
       Section("Preview") {
-        Markdown(self.markdown)
+          HybridMarkdown(self.markdown)
       }
     }
   }

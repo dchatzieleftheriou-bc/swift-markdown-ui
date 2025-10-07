@@ -20,10 +20,12 @@ struct HeadingsView: View {
 
   var body: some View {
     DemoView {
-      Markdown(self.content)
+      HybridMarkdown(self.content)
+            .markdownHybridHeadingDividerEnabled(false)
 
       Section("Customization Example") {
-        Markdown("# One Big Header")
+        HybridMarkdown("# One Big Header")
+              .markdownHybridHeadingDividerEnabled(false)
       }
       .markdownBlockStyle(\.heading1) { configuration in
         configuration.label

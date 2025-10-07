@@ -168,6 +168,8 @@ public struct Theme: Sendable {
   /// The code block style.
   public var codeBlock = BlockStyle<CodeBlockConfiguration> { $0.label }
 
+  public var hybridCodeBlock = BlockStyle<CodeBlockConfiguration> { $0.label }
+
   /// The image style.
   public var image = BlockStyle<BlockConfiguration> { $0.label }
 
@@ -339,6 +341,17 @@ extension Theme {
     theme.codeBlock = .init(body: body)
     return theme
   }
+
+    /// Adds a code block style to the theme.
+    /// - Parameter body: A view builder that returns a customized code block.
+    public func hybridCodeBlock<Body: View>(
+      @ViewBuilder body: @escaping (_ configuration: CodeBlockConfiguration) -> Body
+    ) -> Theme {
+      var theme = self
+      theme.hybridCodeBlock = .init(body: body)
+      return theme
+    }
+
 
   /// Adds an image style to the theme.
   /// - Parameter body: A view builder that returns a customized image.

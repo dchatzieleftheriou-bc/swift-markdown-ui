@@ -81,7 +81,7 @@ private struct ReadmeView: View {
   private var content: some View {
     Group {
       if let response, let content = response.decodedContent {
-        Markdown(content, baseURL: response.baseURL, imageBaseURL: response.imageBaseURL)
+          HybridMarkdown(content, baseURL: response.baseURL, imageBaseURL: response.imageBaseURL)
       } else {
         Markdown("Oops! Something went wrong while fetching the README file.")
       }

@@ -34,14 +34,14 @@ struct ImagesView: View {
 
   var body: some View {
     DemoView {
-      Markdown(self.content)
+        HybridMarkdown(self.content)
 
       Section("Inline images") {
-        Markdown(self.inlineImageContent)
+        HybridMarkdown(self.inlineImageContent)
       }
 
       Section("Customization Example") {
-        Markdown(self.content)
+          HybridMarkdown(self.content)
       }
       .markdownBlockStyle(\.image) { configuration in
         configuration.label

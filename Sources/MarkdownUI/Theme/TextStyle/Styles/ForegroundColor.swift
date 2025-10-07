@@ -14,3 +14,9 @@ public struct ForegroundColor: TextStyle {
     attributes.foregroundColor = self.foregroundColor
   }
 }
+
+// Attribute flag stored in AttributedString runs, used to plumb selection enablement
+struct MarkdownSelectionAttribute: AttributedStringKey {
+  typealias Value = Bool
+  static let name = "markdownSelectionEnabled"
+}

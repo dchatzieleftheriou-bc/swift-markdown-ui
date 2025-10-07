@@ -44,7 +44,8 @@ struct CodeView: View {
 
   var body: some View {
     DemoView {
-      Markdown(self.content)
+        HybridMarkdown(self.content)
+            .markdownCodeSyntaxHighlighter(.plainText(useAttributed: true))
     }
   }
 }

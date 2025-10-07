@@ -6,6 +6,7 @@ struct InlineText: View {
   @Environment(\.imageBaseURL) private var imageBaseURL
   @Environment(\.softBreakMode) private var softBreakMode
   @Environment(\.theme) private var theme
+  @Environment(\.markdownTextSelection) private var selectionEnabled
 
   @State private var inlineImages: [String: Image] = [:]
 

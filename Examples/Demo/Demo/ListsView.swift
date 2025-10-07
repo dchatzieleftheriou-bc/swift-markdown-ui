@@ -76,10 +76,10 @@ struct ListsView: View {
 
   var body: some View {
     DemoView {
-      Markdown(self.content)
+        HybridMarkdown(self.content)
 
       Section("Customization Example") {
-        Markdown(self.customizedContent)
+          HybridMarkdown(self.customizedContent)
       }
       .markdownBulletedListMarker(.dash)
       .markdownNumberedListMarker(.lowerRoman)

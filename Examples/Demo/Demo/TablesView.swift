@@ -8,16 +8,16 @@ struct TablesView: View {
     include a blank line before your table for it to render correctly.
 
     ```
-    | First Header  | Second Header |
-    | ------------- | ------------- |
-    | Content Cell  | Content Cell  |
-    | Content Cell  | Content Cell  |
+    | First Header  | Second Header | Second Header | Second Header |
+    | ------------- | ------------- | ------------- | ------------- |
+    | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+    | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
     ```
 
-    | First Header  | Second Header |
-    | ------------- | ------------- |
-    | Content Cell  | Content Cell  |
-    | Content Cell  | Content Cell  |
+    | First Header  | Second Header | Second Header | Second Header |
+    | ------------- | ------------- | ------------- | ------------- |
+    | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
+    | Content Cell  | Content Cell  | Content Cell  | Content Cell  |
 
     ## Formatting content within your table
 
@@ -42,7 +42,7 @@ struct TablesView: View {
 
   var body: some View {
     DemoView {
-      Markdown(self.content)
+        Markdown(self.content)
     }
   }
 }

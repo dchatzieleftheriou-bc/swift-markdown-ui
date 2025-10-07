@@ -13,10 +13,10 @@ struct QuotesView: View {
 
   var body: some View {
     DemoView {
-      Markdown(self.content)
+        HybridMarkdown(self.content)
 
       Section("Customization Example") {
-        Markdown(self.content)
+          HybridMarkdown(self.content)
       }
       .markdownBlockStyle(\.blockquote) { configuration in
         configuration.label
