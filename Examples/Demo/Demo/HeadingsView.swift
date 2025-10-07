@@ -25,6 +25,11 @@ struct HeadingsView: View {
 
       Section("Customization Example") {
         HybridMarkdown("# One Big Header")
+              .markdownTextStyle {
+                FontFamily(.custom("Trebuchet MS"))
+                FontWeight(.bold)
+                FontSize(.em(2.5))
+              }
               .markdownHybridHeadingDividerEnabled(false)
       }
       .markdownBlockStyle(\.heading1) { configuration in
