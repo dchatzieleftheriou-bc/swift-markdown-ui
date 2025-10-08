@@ -18,6 +18,7 @@ struct UIKitTextRunView: UIViewRepresentable {
     @Environment(\.hybridLineSpacing) private var hybridLineSpacing
     @Environment(\.hybridThematicBreakColor) private var hybridThematicBreakColor
     @Environment(\.hybridThematicBreakThickness) private var hybridThematicBreakThickness
+    @Environment(\.layoutDirection) private var layoutDirection
 
     final class Coordinator: NSObject, UITextViewDelegate {
         var openURL: OpenURLAction?
