@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct HybridHeadingMetrics: Hashable {
   public var sizeScale: CGFloat
+  public var sizeInPoints: CGFloat?
   public var weight: Font.Weight?
   public var foregroundColor: Color?
   public var paragraphSpacingBefore: CGFloat?
@@ -9,6 +10,16 @@ public struct HybridHeadingMetrics: Hashable {
 
   public init(sizeScale: CGFloat, weight: Font.Weight? = nil, foregroundColor: Color? = nil, paragraphSpacingBefore: CGFloat? = nil, paragraphSpacingAfter: CGFloat? = nil) {
     self.sizeScale = sizeScale
+    self.sizeInPoints = nil
+    self.weight = weight
+    self.foregroundColor = foregroundColor
+    self.paragraphSpacingBefore = paragraphSpacingBefore
+    self.paragraphSpacingAfter = paragraphSpacingAfter
+  }
+
+  public init(points: CGFloat, weight: Font.Weight? = nil, foregroundColor: Color? = nil, paragraphSpacingBefore: CGFloat? = nil, paragraphSpacingAfter: CGFloat? = nil) {
+    self.sizeScale = 1.0
+    self.sizeInPoints = points
     self.weight = weight
     self.foregroundColor = foregroundColor
     self.paragraphSpacingBefore = paragraphSpacingBefore

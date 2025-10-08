@@ -111,13 +111,17 @@ extension Theme {
       .fixedSize(horizontal: false, vertical: true)
     }
     .hybridCodeBlock { configuration in
-      configuration.label
-        .markdownTextStyle {
-          FontFamilyVariant(.monospaced)
-          FontSize(.em(0.85))
-          BackgroundColor(.secondaryBackground)
-        }
-        .padding(16)
+      VStack {
+        configuration.label
+          .markdownTextStyle {
+            FontFamilyVariant(.monospaced)
+            FontSize(.em(0.85))
+          }
+          .padding(16)
+      }
+      .background(Color(.secondarySystemBackground))
+      .clipShape(RoundedRectangle(cornerRadius: 8))
+      .markdownMargin(top: .zero, bottom: .em(0.8))
     }
     .codeBlock { configuration in
       ScrollView(.horizontal) {

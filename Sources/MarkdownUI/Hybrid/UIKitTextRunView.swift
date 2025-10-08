@@ -151,7 +151,11 @@ struct UIKitTextRunView: UIViewRepresentable {
                 case .heading(let level, let inlines):
                     var headingAttrs = baseAttributes
                     if let metrics = headingMetrics[level] {
-                        FontSize(.em(metrics.sizeScale))._collectAttributes(in: &headingAttrs)
+                        if let size = metrics.sizeInPoints { 
+                            FontSize(size)._collectAttributes(in: &headingAttrs) 
+                        } else { 
+                            FontSize(.em(metrics.sizeScale))._collectAttributes(in: &headingAttrs) 
+                        }
                         if let w = metrics.weight { FontWeight(w)._collectAttributes(in: &headingAttrs) }
                         if let c = metrics.foregroundColor { ForegroundColor(c)._collectAttributes(in: &headingAttrs) }
                         if let before = metrics.paragraphSpacingBefore { headingAttrs.markdownParagraphSpacingBefore = before }
