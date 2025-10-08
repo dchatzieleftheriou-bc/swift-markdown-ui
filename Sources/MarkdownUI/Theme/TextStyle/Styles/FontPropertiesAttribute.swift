@@ -29,6 +29,12 @@ enum MarkdownParagraphSpacingAfterAttribute: AttributedStringKey {
   static let name = "markdownParagraphSpacingAfter"
 }
 
+// Marks that a paragraph/run belongs to a list item (bulleted or numbered)
+enum MarkdownListItemAttribute: AttributedStringKey {
+  typealias Value = Bool
+  static let name = "markdownListItem"
+}
+
 // Marks inline code runs so UIKit can selectively apply background colors
 enum MarkdownCodeInlineAttribute: AttributedStringKey {
   typealias Value = Bool
@@ -63,6 +69,7 @@ extension AttributeScopes {
     let markdownCodeInline: MarkdownCodeInlineAttribute
     let markdownHeadingLevel: MarkdownHeadingLevelAttribute
     let markdownThematicBreak: MarkdownThematicBreakAttribute
+    let markdownListItem: MarkdownListItemAttribute
   }
 }
 

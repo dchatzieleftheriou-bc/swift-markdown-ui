@@ -151,10 +151,10 @@ struct UIKitTextRunView: UIViewRepresentable {
                 case .heading(let level, let inlines):
                     var headingAttrs = baseAttributes
                     if let metrics = headingMetrics[level] {
-                        if let size = metrics.sizeInPoints { 
-                            FontSize(size)._collectAttributes(in: &headingAttrs) 
-                        } else { 
-                            FontSize(.em(metrics.sizeScale))._collectAttributes(in: &headingAttrs) 
+                        if let size = metrics.sizeInPoints {
+                            FontSize(size)._collectAttributes(in: &headingAttrs)
+                        } else {
+                            FontSize(.em(metrics.sizeScale))._collectAttributes(in: &headingAttrs)
                         }
                         if let w = metrics.weight { FontWeight(w)._collectAttributes(in: &headingAttrs) }
                         if let c = metrics.foregroundColor { ForegroundColor(c)._collectAttributes(in: &headingAttrs) }
@@ -187,7 +187,9 @@ struct UIKitTextRunView: UIViewRepresentable {
                     for (i, item) in items.enumerated() {
                         var attrs = baseAttributes
                         attrs.markdownIndentLevel = indentLevel + 1
-                        var line = AttributedString("• ", attributes: attrs)
+                        // Mark this paragraph as a list item and use a tab stop after the bullet
+                        attrs.markdownListItem = true
+                        var line = AttributedString("•\t", attributes: attrs)
                         // Paragraph content of the item
                         for child in item.children {
                             switch child {
@@ -215,7 +217,9 @@ struct UIKitTextRunView: UIViewRepresentable {
                     for (offset, item) in items.enumerated() {
                         var attrs = baseAttributes
                         attrs.markdownIndentLevel = indentLevel + 1
-                        var line = AttributedString("\(start + offset). ", attributes: attrs)
+                        // Mark this paragraph as a list item and use a tab stop after the marker
+                        attrs.markdownListItem = true
+                        var line = AttributedString("\(start + offset).\t", attributes: attrs)
                         for child in item.children {
                             switch child {
                             case .paragraph(let inlines):
@@ -291,87 +295,95 @@ struct UIKitTextRunView: UIViewRepresentable {
         let baseColor: UIColor = (baseAttrs.foregroundColor.map { UIColor($0) }) ?? .label
 
         let output = NSMutableAttributedString()
-
+        var currentListMarkerWidth: CGFloat = 0
         for run in combined.runs {
             let swiftSub = AttributedString(combined[run.range])
             let text = String(swiftSub.characters)
 
-            var attrs: [NSAttributedString.Key: Any] = [:]
-
-            // Font
-            if let p = run.fontProperties {
-                attrs[.font] = UIFont.withProperties(p)
-            } else {
-                attrs[.font] = baseFont
-            }
-
-            // Color
-            if let c = run.foregroundColor {
-                attrs[.foregroundColor] = UIColor(c)
-            } else {
-                attrs[.foregroundColor] = baseColor
-            }
-
-            // Background: only apply when explicitly marked as inline code
-            if let isCode = run.markdownCodeInline, isCode, let bg = run.backgroundColor {
-                attrs[.backgroundColor] = UIColor(bg)
-            }
-
-            // Link
-            if let link = run.link { attrs[.link] = link }
-
-            // Strikethrough
-            if run.strikethroughStyle != nil {
-                attrs[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
-            }
-
-            // Underline
-            if run.underlineStyle != nil {
-                attrs[.underlineStyle] = NSUnderlineStyle.single.rawValue
-            }
-
-            // Preserve semantic quote level for overlay drawing
-            if let level = run.markdownQuoteLevel, level > 0 {
-                attrs[NSAttributedString.Key("markdownQuoteLevel")] = level
-            }
-
-            // Preserve heading level for heading divider overlay (H1/H2)
-            if let h = run.markdownHeadingLevel, h > 0 {
-                attrs[NSAttributedString.Key("markdownHeadingLevel")] = h
-            }
-
-            // Mark thematic break so overlay can draw a rule
-            if let isBreak = run.markdownThematicBreak, isBreak {
-                attrs[NSAttributedString.Key("markdownThematicBreak")] = true
-            }
-
-            // Paragraph-level styling (indentation, spacing, line spacing)
-            if let indent = run.markdownIndentLevel, indent > 0 {
-                let paragraph = NSMutableParagraphStyle()
-                paragraph.lineBreakMode = .byWordWrapping
-                if let ls = hybridLineSpacing { paragraph.lineSpacing = ls }
-                let indentWidth = CGFloat(16 * indent)
-                paragraph.headIndent = indentWidth
-                paragraph.firstLineHeadIndent = indentWidth
-                if let before = run.markdownParagraphSpacingBefore { paragraph.paragraphSpacingBefore = before }
-                if let after = run.markdownParagraphSpacingAfter { paragraph.paragraphSpacing = after }
-                attrs[.paragraphStyle] = paragraph
-            } else if hybridLineSpacing != nil || run.markdownParagraphSpacingBefore != nil || run.markdownParagraphSpacingAfter != nil {
-                let paragraph = NSMutableParagraphStyle()
-                paragraph.lineBreakMode = .byWordWrapping
-                if let ls = hybridLineSpacing { paragraph.lineSpacing = ls }
-                if let before = run.markdownParagraphSpacingBefore { paragraph.paragraphSpacingBefore = before }
-                if let after = run.markdownParagraphSpacingAfter { paragraph.paragraphSpacing = after }
+            var attrs = self.nsBaseAttributes(for: run, baseFont: baseFont, baseColor: baseColor)
+            self.nsApplyInlineDecorations(run, to: &attrs)
+            self.nsApplySemanticAttributes(run, to: &attrs)
+            if let paragraph = self.nsBuildParagraphStyle(for: run, text: text, baseFont: baseFont, currentListMarkerWidth: &currentListMarkerWidth) {
                 attrs[.paragraphStyle] = paragraph
             }
-
-            // Kerning
             if let kern = run.kern { attrs[.kern] = kern }
 
             output.append(NSAttributedString(string: text, attributes: attrs))
+            if text.contains("\n") { currentListMarkerWidth = 0 }
         }
 
         return output
+    }
+
+    // MARK: - NSAttributedString helpers
+
+    private func nsBaseAttributes(for run: AttributedString.Runs.Run, baseFont: UIFont, baseColor: UIColor) -> [NSAttributedString.Key: Any] {
+        var attrs: [NSAttributedString.Key: Any] = [:]
+        if let p = run.fontProperties { attrs[.font] = UIFont.withProperties(p) } else { attrs[.font] = baseFont }
+        if let c = run.foregroundColor { attrs[.foregroundColor] = UIColor(c) } else { attrs[.foregroundColor] = baseColor }
+        return attrs
+    }
+
+    private func nsApplyInlineDecorations(_ run: AttributedString.Runs.Run, to attrs: inout [NSAttributedString.Key: Any]) {
+        if let isCode = run.markdownCodeInline, isCode, let bg = run.backgroundColor { attrs[.backgroundColor] = UIColor(bg) }
+        if let link = run.link { attrs[.link] = link }
+        if run.strikethroughStyle != nil { attrs[.strikethroughStyle] = NSUnderlineStyle.single.rawValue }
+        if run.underlineStyle != nil { attrs[.underlineStyle] = NSUnderlineStyle.single.rawValue }
+    }
+
+    private func nsApplySemanticAttributes(_ run: AttributedString.Runs.Run, to attrs: inout [NSAttributedString.Key: Any]) {
+        if let level = run.markdownQuoteLevel, level > 0 { attrs[NSAttributedString.Key("markdownQuoteLevel")] = level }
+        if let h = run.markdownHeadingLevel, h > 0 { attrs[NSAttributedString.Key("markdownHeadingLevel")] = h }
+        if let isBreak = run.markdownThematicBreak, isBreak { attrs[NSAttributedString.Key("markdownThematicBreak")] = true }
+    }
+
+    private func nsBuildParagraphStyle(for run: AttributedString.Runs.Run, text: String, baseFont: UIFont, currentListMarkerWidth: inout CGFloat) -> NSParagraphStyle? {
+        let paragraphNeeded = (self.hybridLineSpacing != nil) || (run.markdownParagraphSpacingBefore != nil) || (run.markdownParagraphSpacingAfter != nil) || (run.markdownIndentLevel ?? 0) > 0 || (run.markdownListItem ?? false)
+        guard paragraphNeeded else { return nil }
+
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineBreakMode = .byWordWrapping
+        paragraph.baseWritingDirection = (self.layoutDirection == .rightToLeft) ? .rightToLeft : .leftToRight
+        if let ls = self.hybridLineSpacing { paragraph.lineSpacing = ls }
+
+        if let indent = run.markdownIndentLevel, indent > 0 {
+            let indentWidth = CGFloat(16 * indent)
+            if let isList = run.markdownListItem, isList {
+                let font: UIFont = (run.fontProperties.map { UIFont.withProperties($0) }) ?? baseFont
+                if currentListMarkerWidth == 0, let tabIndex = text.firstIndex(of: "\t") {
+                    let marker = String(text[..<tabIndex])
+                    var measureAttrs: [NSAttributedString.Key: Any] = [.font: font]
+                    if let k = run.kern { measureAttrs[.kern] = k }
+                    let measured = NSAttributedString(string: marker, attributes: measureAttrs).size().width
+                    currentListMarkerWidth = ceil(measured)
+                }
+                let gap = ceil(font.pointSize * 0.3)
+                let tabLocation = indentWidth + currentListMarkerWidth + gap
+                paragraph.tabStops = [NSTextTab(textAlignment: .natural, location: tabLocation)]
+                paragraph.headIndent = indentWidth + currentListMarkerWidth + gap
+                paragraph.firstLineHeadIndent = indentWidth
+            } else {
+                paragraph.headIndent = indentWidth
+                paragraph.firstLineHeadIndent = indentWidth
+            }
+        } else if run.markdownListItem ?? false {
+            let font: UIFont = (run.fontProperties.map { UIFont.withProperties($0) }) ?? baseFont
+            if currentListMarkerWidth == 0, let tabIndex = text.firstIndex(of: "\t") {
+                let marker = String(text[..<tabIndex])
+                var measureAttrs: [NSAttributedString.Key: Any] = [.font: font]
+                if let k = run.kern { measureAttrs[.kern] = k }
+                currentListMarkerWidth = ceil(NSAttributedString(string: marker, attributes: measureAttrs).size().width)
+            }
+            let gap = ceil(font.pointSize * 0.3)
+            let tabLocation = currentListMarkerWidth + gap
+            paragraph.tabStops = [NSTextTab(textAlignment: .natural, location: tabLocation)]
+            paragraph.headIndent = currentListMarkerWidth + gap
+            paragraph.firstLineHeadIndent = 0
+        }
+
+        if let before = run.markdownParagraphSpacingBefore { paragraph.paragraphSpacingBefore = before }
+        if let after = run.markdownParagraphSpacingAfter { paragraph.paragraphSpacing = after }
+        return paragraph
     }
 }
 #endif
