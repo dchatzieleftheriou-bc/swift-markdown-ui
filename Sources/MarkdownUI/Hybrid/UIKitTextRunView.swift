@@ -20,6 +20,7 @@ struct UIKitTextRunView: UIViewRepresentable {
     @Environment(\.hybridThematicBreakThickness) private var hybridThematicBreakThickness
     @Environment(\.layoutDirection) private var layoutDirection
     @Environment(\.hybridInlineCodeOverlay) private var inlineCodeOverlay
+    @Environment(\.hybridLineHeight) private var hybridLineHeight
 
     final class Coordinator: NSObject, UITextViewDelegate {
         var openURL: OpenURLAction?
@@ -362,7 +363,12 @@ struct UIKitTextRunView: UIViewRepresentable {
         let paragraph = NSMutableParagraphStyle()
         paragraph.lineBreakMode = .byWordWrapping
         paragraph.baseWritingDirection = (self.layoutDirection == .rightToLeft) ? .rightToLeft : .leftToRight
-        if let ls = self.hybridLineSpacing { paragraph.lineSpacing = ls }
+        if let lh = self.hybridLineHeight {
+            paragraph.minimumLineHeight = lh
+            paragraph.maximumLineHeight = lh
+        } else if let ls = self.hybridLineSpacing {
+            paragraph.lineSpacing = ls
+        }
 
         if let indent = run.markdownIndentLevel, indent > 0 {
             let indentWidth = CGFloat(16 * indent)
