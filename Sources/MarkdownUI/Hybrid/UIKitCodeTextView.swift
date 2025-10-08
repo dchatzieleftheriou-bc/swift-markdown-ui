@@ -68,7 +68,7 @@ struct UIKitCodeTextView: UIViewRepresentable {
         if let maxHeight = maxHeight {
           clampedHeight = min(max(height, minHeight), maxHeight)
         } else {
-          max(height, minHeight)
+          clampedHeight = max(height, minHeight)
         }
 
         tv.frame = CGRect(x: 0, y: 0, width: contentWidth, height: clampedHeight)
@@ -82,8 +82,13 @@ struct UIKitCodeTextView: UIViewRepresentable {
         let width = max(1, proposal.width ?? uiView.superview?.bounds.width ?? uiView.bounds.width)
         let attributed = self.processedAttributed()
         let height = self.measureHeight(for: width, attributed: attributed)
-        let clamped = min(max(height, minHeight), maxHeight)
-        return CGSize(width: width, height: ceil(clamped))
+        let clampedHeight: CGFloat
+        if let maxHeight = maxHeight {
+          clampedHeight = min(max(height, minHeight), maxHeight)
+        } else {
+          clampedHeight = max(height, minHeight)
+        }
+        return CGSize(width: width, height: ceil(clampedHeight))
     }
 
     // MARK: - Typography processing
