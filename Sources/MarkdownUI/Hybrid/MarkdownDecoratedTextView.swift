@@ -9,6 +9,11 @@ final class MarkdownDecoratedTextView: UITextView {
     var thematicBreakUIColor: UIColor?
     var thematicBreakThickness: CGFloat = 1.0
     var headingDividerEnabled: Bool = true
+    // Inline code overlay configuration (bridged from environment)
+    var inlineCodeOverlayEnabled: Bool = false
+    var inlineCodeOverlayColor: UIColor?
+    var inlineCodeOverlayPadding: CGFloat = 2
+    var inlineCodeOverlayCornerRadius: CGFloat = 4
     
     override func layoutSubviews() {
         super.layoutSubviews()
@@ -42,7 +47,7 @@ final class MarkdownDecoratedTextView: UITextView {
         let contentLayer = (self.subviews.first)?.layer ?? self.layer
         contentLayer.sublayers?.removeAll(where: { layer in
             guard let name = layer.name else { return false }
-            return name.hasPrefix("markdownQuoteBar") || name.hasPrefix("markdownHeadingDivider") || name.hasPrefix("markdownThematicBreak")
+            return name.hasPrefix("markdownQuoteBar") || name.hasPrefix("markdownHeadingDivider") || name.hasPrefix("markdownThematicBreak") || name.hasPrefix("markdownInlineCode")
         })
 
         let docRange = layoutManager.documentRange
@@ -104,6 +109,41 @@ final class MarkdownDecoratedTextView: UITextView {
                 CATransaction.setDisableActions(true)
                 contentLayer.addSublayer(divider)
                 CATransaction.commit()
+            }
+        }
+
+        // Inline code rounded overlays per visual line
+        if inlineCodeOverlayEnabled {
+            self.attributedText.enumerateAttribute(NSAttributedString.Key("markdownCodeInline"), in: full, options: []) { value, nsRange, _ in
+                guard let isCode = value as? Bool, isCode, nsRange.length > 0 else { return }
+                if let lm = self.textLayoutManager {
+                    let docStart = lm.documentRange.location
+                    if let start = lm.location(docStart, offsetBy: nsRange.location),
+                       let end = lm.location(docStart, offsetBy: nsRange.location + nsRange.length),
+                        let tr = NSTextRange(location: start, end: end) {
+                        var idx = 0
+                        lm.enumerateTextSegments(in: tr, type: .standard, options: []) { _, rect, _, _ in
+                            guard !rect.isEmpty else { return true }
+                            let inflated = rect.insetBy(dx: -self.inlineCodeOverlayPadding, dy: -self.inlineCodeOverlayPadding * 0.4)
+                            let layer = CALayer()
+                            layer.name = "markdownInlineCode-\(nsRange.location)-\(idx)"
+                            idx += 1
+                            var color = self.inlineCodeOverlayColor
+                            if color == nil {
+                                let keyColor = self.attributedText.attribute(NSAttributedString.Key("markdownInlineCodeBackground"), at: nsRange.location, effectiveRange: nil) as? UIColor
+                                color = keyColor ?? (self.attributedText.attribute(NSAttributedString.Key.backgroundColor, at: nsRange.location, effectiveRange: nil) as? UIColor)
+                            }
+                            layer.backgroundColor = (color ?? UIColor.tertiarySystemFill).cgColor
+                            layer.cornerRadius = self.inlineCodeOverlayCornerRadius
+                            layer.frame = inflated
+                            CATransaction.begin()
+                            CATransaction.setDisableActions(true)
+                            contentLayer.addSublayer(layer)
+                            CATransaction.commit()
+                            return true
+                        }
+                    }
+                }
             }
         }
 

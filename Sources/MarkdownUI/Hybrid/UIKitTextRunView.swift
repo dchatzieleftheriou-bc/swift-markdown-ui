@@ -19,6 +19,7 @@ struct UIKitTextRunView: UIViewRepresentable {
     @Environment(\.hybridThematicBreakColor) private var hybridThematicBreakColor
     @Environment(\.hybridThematicBreakThickness) private var hybridThematicBreakThickness
     @Environment(\.layoutDirection) private var layoutDirection
+    @Environment(\.hybridInlineCodeOverlay) private var inlineCodeOverlay
 
     final class Coordinator: NSObject, UITextViewDelegate {
         var openURL: OpenURLAction?
@@ -58,6 +59,11 @@ struct UIKitTextRunView: UIViewRepresentable {
         tv.headingDividerEnabled = environmentHeadingDividerEnabled
         tv.thematicBreakUIColor = UIColor(hybridThematicBreakColor)
         tv.thematicBreakThickness = hybridThematicBreakThickness
+        // Bridge inline code overlay config
+        tv.inlineCodeOverlayEnabled = inlineCodeOverlay.enabled
+        tv.inlineCodeOverlayColor = inlineCodeOverlay.color.map(UIColor.init)
+        tv.inlineCodeOverlayPadding = inlineCodeOverlay.padding
+        tv.inlineCodeOverlayCornerRadius = inlineCodeOverlay.cornerRadius
         
         return tv
     }
@@ -326,7 +332,18 @@ struct UIKitTextRunView: UIViewRepresentable {
     }
 
     private func nsApplyInlineDecorations(_ run: AttributedString.Runs.Run, to attrs: inout [NSAttributedString.Key: Any]) {
-        if let isCode = run.markdownCodeInline, isCode, let bg = run.backgroundColor { attrs[.backgroundColor] = UIColor(bg) }
+        // Inline code backgrounds:
+        // - When overlay is disabled: apply NSAttributedString background color directly.
+        // - When overlay is enabled: store the intended color under a custom key so the
+        //   UITextView overlay renderer can pick it up, but don't set actual background.
+        if let isCode = run.markdownCodeInline, isCode, let bg = run.backgroundColor {
+            attrs[NSAttributedString.Key("markdownCodeInline")] = true
+            if inlineCodeOverlay.enabled {
+                attrs[NSAttributedString.Key("markdownInlineCodeBackground")] = UIColor(bg)
+            } else {
+                attrs[.backgroundColor] = UIColor(bg)
+            }
+        }
         if let link = run.link { attrs[.link] = link }
         if run.strikethroughStyle != nil { attrs[.strikethroughStyle] = NSUnderlineStyle.single.rawValue }
         if run.underlineStyle != nil { attrs[.underlineStyle] = NSUnderlineStyle.single.rawValue }
