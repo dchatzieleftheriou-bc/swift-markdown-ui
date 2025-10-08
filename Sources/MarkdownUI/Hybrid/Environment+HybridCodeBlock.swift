@@ -5,7 +5,7 @@ private struct HybridCodeBlockMinHeightKey: EnvironmentKey {
 }
 
 private struct HybridCodeBlockMaxHeightKey: EnvironmentKey {
-  static let defaultValue: CGFloat = 800
+  static let defaultValue: CGFloat? = nil
 }
 
 extension EnvironmentValues {
@@ -13,14 +13,14 @@ extension EnvironmentValues {
     get { self[HybridCodeBlockMinHeightKey.self] }
     set { self[HybridCodeBlockMinHeightKey.self] = newValue }
   }
-  var hybridCodeBlockMaxHeight: CGFloat {
+  var hybridCodeBlockMaxHeight: CGFloat? {
     get { self[HybridCodeBlockMaxHeightKey.self] }
     set { self[HybridCodeBlockMaxHeightKey.self] = newValue }
   }
 }
 
 public extension View {
-  func markdownHybridCodeBlockHeight(min: CGFloat, max: CGFloat) -> some View {
+  func markdownHybridCodeBlockHeight(min: CGFloat, max: CGFloat?) -> some View {
     environment(\.hybridCodeBlockMinHeight, min)
       .environment(\.hybridCodeBlockMaxHeight, max)
   }

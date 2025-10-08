@@ -28,9 +28,9 @@ struct UIKitCodeTextView: UIViewRepresentable {
         tv.isSelectable = true
         tv.isScrollEnabled = true
             
-        tv.showsVerticalScrollIndicator = true
+        tv.showsVerticalScrollIndicator = false
         tv.showsHorizontalScrollIndicator = false
-        tv.alwaysBounceVertical = true
+        tv.alwaysBounceVertical = false
         tv.alwaysBounceHorizontal = false
         tv.backgroundColor = .clear
         tv.textContainerInset = .zero
@@ -64,7 +64,12 @@ struct UIKitCodeTextView: UIViewRepresentable {
         let availableWidth = max(scrollView.bounds.width, 1)
         let contentWidth = max(availableWidth, maxLineWidth)
         let height = self.measureHeight(for: availableWidth, attributed: attributed)
-        let clampedHeight = min(max(height, minHeight), maxHeight)
+        let clampedHeight: CGFloat
+        if let maxHeight = maxHeight {
+          clampedHeight = min(max(height, minHeight), maxHeight)
+        } else {
+          max(height, minHeight)
+        }
 
         tv.frame = CGRect(x: 0, y: 0, width: contentWidth, height: clampedHeight)
         scrollView.contentSize = CGSize(width: contentWidth, height: clampedHeight)
