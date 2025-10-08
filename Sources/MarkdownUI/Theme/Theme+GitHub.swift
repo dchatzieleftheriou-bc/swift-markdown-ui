@@ -111,12 +111,13 @@ extension Theme {
       .fixedSize(horizontal: false, vertical: true)
     }
     .hybridCodeBlock { configuration in
-        configuration.label
-            .markdownTextStyle {
-                FontFamilyVariant(.monospaced)
-                FontSize(.em(0.85))
-            }
-            .padding(16)
+      configuration.label
+        .markdownTextStyle {
+          FontFamilyVariant(.monospaced)
+          FontSize(.em(0.85))
+          BackgroundColor(.secondaryBackground)
+        }
+        .padding(16)
     }
     .codeBlock { configuration in
       ScrollView(.horizontal) {
@@ -145,15 +146,15 @@ extension Theme {
         .relativeFrame(minWidth: .em(1.5), alignment: .trailing)
     }
     .table { configuration in
-        ScrollView(.horizontal) {
-            configuration.label
-                .fixedSize(horizontal: false, vertical: true)
-                .markdownTableBorderStyle(.init(color: .border))
-                .markdownTableBackgroundStyle(
-                    .alternatingRows(Color.background, Color.secondaryBackground)
-                )
-                .markdownMargin(top: 0, bottom: 16)
-        }
+      ScrollView(.horizontal) {
+        configuration.label
+          .fixedSize(horizontal: false, vertical: true)
+          .markdownTableBorderStyle(.init(color: .border))
+          .markdownTableBackgroundStyle(
+            .alternatingRows(Color.background, Color.secondaryBackground)
+          )
+          .markdownMargin(top: 0, bottom: 16)
+      }
     }
     .tableCell { configuration in
       configuration.label

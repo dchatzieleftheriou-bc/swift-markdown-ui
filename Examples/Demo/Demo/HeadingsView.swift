@@ -6,13 +6,13 @@ struct HeadingsView: View {
     # Headings
     To create a heading, add one to size `#` symbols before your heading text.
     The number of `#` you use will determine the size of the heading:
-
+    
     ```
     # The largest heading
     ## The second largest heading
     ###### The smallest heading
     ```
-
+    
     # The largest heading
     ## The second largest heading
     ###### The smallest heading
@@ -21,16 +21,17 @@ struct HeadingsView: View {
   var body: some View {
     DemoView {
       HybridMarkdown(self.content)
-            .markdownHybridHeadingDividerEnabled(false)
+        .markdownCodeSyntaxHighlighter(.plainText(useAttributed: true))
+        .markdownHybridHeadingDividerEnabled(false)
 
       Section("Customization Example") {
         HybridMarkdown("# One Big Header")
-              .markdownTextStyle {
-                FontFamily(.custom("Trebuchet MS"))
-                FontWeight(.bold)
-                FontSize(.em(2.5))
-              }
-              .markdownHybridHeadingDividerEnabled(false)
+          .markdownTextStyle {
+            FontFamily(.custom("Trebuchet MS"))
+            FontWeight(.bold)
+            FontSize(.em(2.5))
+          }
+          .markdownHybridHeadingDividerEnabled(false)
       }
       .markdownBlockStyle(\.heading1) { configuration in
         configuration.label

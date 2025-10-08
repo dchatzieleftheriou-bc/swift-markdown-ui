@@ -1,6 +1,6 @@
 import Foundation
 
-enum BlockNode: Hashable {
+enum BlockNode: Hashable, Sendable {
   case blockquote(children: [BlockNode])
   case bulletedList(isTight: Bool, items: [RawListItem])
   case numberedList(isTight: Bool, start: Int, items: [RawListItem])
